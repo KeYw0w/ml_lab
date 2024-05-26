@@ -52,7 +52,7 @@ class SecondWindow(QWidget):
             plot_data_with_date_range(df, date1, date2)
 
             # Замените путь на путь к вашему изображению
-            pixmap = QPixmap("image.png")
+            pixmap = QPixmap("images/image.png")
             self.image_label.setPixmap(pixmap)
             self.image_label.setScaledContents(True)
             self.image_label.setFixedSize(1000, 600)
@@ -132,7 +132,7 @@ class MainWindow(QMainWindow):
             results = [predict_with_date_range(line) for line in lines]  # Обрабатываем каждую строку
             self.write_results_to_csv(lines, results, "Result.csv")
             plot_pie_chart_from_csv("Result.csv")
-            pixmap = QPixmap("result.png")
+            pixmap = QPixmap("images/result.png")
             self.image_label.setPixmap(pixmap)
             self.image_label.setScaledContents(True)
             self.image_label.setFixedSize(400, 400)
@@ -144,9 +144,9 @@ class MainWindow(QMainWindow):
             # Вызываем функцию predict и открываем окно с результатом
             result = self.predict(self.input_text)
             if result == 1:
-                pixmap = QPixmap("happy.png")  # Укажите путь к изображению с улыбкой
+                pixmap = QPixmap("images/happy.png")  # Укажите путь к изображению с улыбкой
             else:
-                pixmap = QPixmap("sad.png")  # Укажите путь к изображению с грустью
+                pixmap = QPixmap("images/sad.png")  # Укажите путь к изображению с грустью
             self.image_label.setPixmap(pixmap)
             self.image_label.setScaledContents(True)
             self.image_label.setFixedSize(150, 150)

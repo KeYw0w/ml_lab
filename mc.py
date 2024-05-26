@@ -123,15 +123,15 @@ def plot_data_with_date_range(df, start_date, end_date):
 end_date = '2022-12-07'
 
 def predict_with_date_range(text:str):
-    vectorizer = load("vector.joblib")  # или TfidfVectorizer(), если использовали его
+    vectorizer = load("models/vector.joblib")  # или TfidfVectorizer(), если использовали его
     X_text = vectorizer.transform(pd.Series(str.lower(text)))
-    model = load('model.joblib')
+    model = load('models/model.joblib')
     ans=(model.predict(X_text))[0]
-    wordlevel = load('wordlevel.joblib')
+    wordlevel = load('models/wordlevel.joblib')
     ans+=(wordlevel.predict(X_text))[0]
-    count_vectors = load('count_vectors.joblib')
+    count_vectors = load('models/count_vectors.joblib')
     ans+=(count_vectors.predict(X_text))[0]
-    log = load('log.joblib')
+    log = load('models/log.joblib')
     ans+=(log.predict(X_text))[0]
     if ans<2:
         return 0
