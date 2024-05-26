@@ -144,9 +144,9 @@ class MainWindow(QMainWindow):
             # Вызываем функцию predict и открываем окно с результатом
             result = self.predict(self.input_text)
             if result == 1:
-                pixmap = QPixmap("../happy.png")  # Укажите путь к изображению с улыбкой
+                pixmap = QPixmap("happy.png")  # Укажите путь к изображению с улыбкой
             else:
-                pixmap = QPixmap("../sad.png")  # Укажите путь к изображению с грустью
+                pixmap = QPixmap("sad.png")  # Укажите путь к изображению с грустью
             self.image_label.setPixmap(pixmap)
             self.image_label.setScaledContents(True)
             self.image_label.setFixedSize(150, 150)
