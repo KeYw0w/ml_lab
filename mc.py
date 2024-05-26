@@ -7,7 +7,7 @@ import pandas as pd
 
 
 # Глобальная переменная для пути к файлу
-FILE_PATH = 'data.csv'
+FILE_PATH = "dat.csv"
 def add_to_csv(rate):
     date=datetime.today().strftime('%Y-%m-%d')
     df = pd.read_csv(FILE_PATH, sep=';', parse_dates=['Дата'], dayfirst=True)
@@ -56,6 +56,21 @@ def add_or_update_record(date, positives, negatives):
     # Сохранение данных обратно в файл
     df.to_csv(FILE_PATH, sep=';', index=False, date_format='%d.%m.%Y')
 
+
+def plot_pie_chart_from_csv(file_path):
+    # Чтение данных из CSV файла
+    df = pd.read_csv(file_path)
+
+    # Подсчет количества каждого результата (0 и 1)
+    result_counts = df['Result'].map(({0: 'Негатив', 1: 'Позитив'})).value_counts()
+
+    # Построение круговой диаграммы
+    plt.figure(figsize=(8, 8))
+    plt.pie(result_counts, labels=result_counts.index, autopct='%1.1f%%', startangle=90, colors=['#66b3ff', '#ff9999'])
+    plt.title('Распределение результатов')
+    plt.axis('equal')  # Делает круговой график кругом
+    plt.savefig("result.png")
+
 # Функция для фильтрации данных по датам и построения графика
 def plot_data_with_date_range(df, start_date, end_date):
     # Фильтрация данных по заданному промежутку дат
@@ -98,13 +113,13 @@ def plot_data_with_date_range(df, start_date, end_date):
 
 
 # Загрузка данных из файла
-df = pd.read_csv('data.csv', sep=';')
+# df = pd.read_csv('data.csv', sep=';')
 
 # Преобразование столбца 'Дата' в тип данных datetime
-df['Дата'] = pd.to_datetime(df['Дата'], format='%d.%m.%Y')
+# df['Дата'] = pd.to_datetime(df['Дата'], format='%d.%m.%Y')
 
-# Пример использования функции
-start_date = '2022-12-05'
+# # Пример использования функции
+# start_date = '2022-12-05'
 end_date = '2022-12-07'
 
 def predict_with_date_range(text:str):
@@ -122,5 +137,5 @@ def predict_with_date_range(text:str):
         return 0
     else: return 1
 #пример работы предикта
-print(predict_with_date_range(" hate my friend, but I love him more than I hate him, so it's more like I love him than I hate him."))
+# print(predict_with_date_range(" hate my friend, but I love him more than I hate him, so it's more like I love him than I hate him."))
 

@@ -1,3 +1,4 @@
+import csv
 import sys
 
 import pandas as pd
@@ -6,33 +7,7 @@ from PyQt5.QtWidgets import (QApplication, QWidget, QPushButton, QVBoxLayout,
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import QDate
 
-from fd.ml_lab.mc import plot_data_with_date_range, predict_with_date_range
-
-
-class ResultWindow(QWidget):
-    def __init__(self, result):
-        super().__init__()
-        self.initUI(result)
-
-    def initUI(self, result):
-        self.setWindowTitle('Результат')
-        self.setGeometry(100, 100, 200, 200)
-
-        layout = QVBoxLayout()
-
-        self.image_label = QLabel(self)
-
-        if result == 1:
-            pixmap = QPixmap("happy.png")  # Укажите путь к изображению с улыбкой
-        else:
-            pixmap = QPixmap("sad.png")  # Укажите путь к изображению с грустью
-
-        self.image_label.setPixmap(pixmap)
-        self.image_label.setScaledContents(True)
-        self.image_label.setFixedSize(100, 100)
-
-        layout.addWidget(self.image_label)
-        self.setLayout(layout)
+from fd.ml_lab.mc import plot_pie_chart_from_csv
 
 
 class SecondWindow(QWidget):
@@ -70,14 +45,9 @@ class SecondWindow(QWidget):
             # Сохраняем информацию из полей ввода в переменные
             date1 = self.date_edit1.date().toString("yyyy-MM-dd")
             date2 = self.date_edit2.date().toString("yyyy-MM-dd")
-            df = pd.read_csv('data.csv', sep=';')
+            df=pd.read_csv('data.csv',sep=";")
             # Преобразование столбца 'Дата' в тип данных datetime
             df['Дата'] = pd.to_datetime(df['Дата'], format='%d.%m.%Y')
-            # Выводим даты в консоль
-            # dat{date1}")
-            # print(f"Дата 2: {date2}")
-            # date1 = '2022-12-05'
-            # end_date = '2022-12-07'
 
             plot_data_with_date_range(df, date1, date2)
 
@@ -91,8 +61,10 @@ class SecondWindow(QWidget):
             msg = QMessageBox()
             msg.setIcon(QMessageBox.Critical)
             msg.setText("Ошибка ввода даты")
-            # msg.setWindowTitle("Ошибка ввода даты")
             msg.exec_()
+
+
+from mc import plot_data_with_date_range, predict_with_date_range
 
 
 class MainWindow(QMainWindow):
@@ -122,36 +94,68 @@ class MainWindow(QMainWindow):
         self.btn_statistics.clicked.connect(self.open_statistics)
         layout.addWidget(self.btn_statistics)
 
+        self.image_label = QLabel(self)
+        layout.addWidget(self.image_label)
+
         widget.setLayout(layout)
         self.setCentralWidget(widget)
 
         self.input_text = ""
+        self.file_path = ""  # Новый атрибут для хранения пути к импортированному файлу
+        self.file_content = []  # Новый атрибут для хранения содержимого файла
+
+    def write_results_to_csv(self, lines, results, output_file_path):
+        with open(output_file_path, 'w', newline='', encoding='utf-8') as csvfile:
+            csvwriter = csv.writer(csvfile)
+            csvwriter.writerow(['Text', 'Result'])  # Запись заголовков
+            for line, result in zip(lines, results):
+                csvwriter.writerow([line, result])
 
     def import_file(self):
         options = QFileDialog.Options()
-        file_name, _ = QFileDialog.getOpenFileName(self, "Выберите файл", "", "Text Files (*.txt)", options=options)
+        file_name, _ = QFileDialog.getOpenFileName(self, "Выберите файл", "", " (*.*)", options=options)
         if file_name:
+            self.file_path = file_name  # Сохраняем путь к файлу
             with open(file_name, 'r') as file:
-                content = file.read()
-                self.text_input.setText(content)
+                content = file.readlines()  # Читаем все строки из файла
+            self.file_content = [line.strip() for line in content]  # Сохраняем содержимое файла
+            if self.file_content:
+                self.text_input.setText(self.file_content[0])  # Отображаем первую строку в поле ввода
+            results = [predict_with_date_range(line) for line in self.file_content]  # Обрабатываем каждую строку
+            self.write_results_to_csv(self.file_content, results, "Result.csv")
 
     def calculate(self):
-        # Сохраняем текст из поля ввода в переменную
-        self.input_text = self.text_input.text()
-        print(f"Введенный текст: {self.input_text}")
+        if self.file_path:
+            with open(self.file_path, 'r') as file:
+                content = file.readlines()
+            lines = [line.strip() for line in content]
+            results = [predict_with_date_range(line) for line in lines]  # Обрабатываем каждую строку
+            self.write_results_to_csv(lines, results, "Result.csv")
+            plot_pie_chart_from_csv("Result.csv")
+            pixmap = QPixmap("result.png")
+            self.image_label.setPixmap(pixmap)
+            self.image_label.setScaledContents(True)
+            self.image_label.setFixedSize(400, 400)
+        else:
+            # Сохраняем текст из поля ввода в переменную
+            self.input_text = self.text_input.text()
+            print(f"Введенный текст: {self.input_text}")
 
-    # Вызываем функцию predict и открываем окно с результатом
-        result = self.predict(self.input_text)
-        self.result_window = ResultWindow(result)
-        self.result_window.show()
-
+            # Вызываем функцию predict и открываем окно с результатом
+            result = self.predict(self.input_text)
+            if result == 1:
+                pixmap = QPixmap("../happy.png")  # Укажите путь к изображению с улыбкой
+            else:
+                pixmap = QPixmap("../sad.png")  # Укажите путь к изображению с грустью
+            self.image_label.setPixmap(pixmap)
+            self.image_label.setScaledContents(True)
+            self.image_label.setFixedSize(150, 150)
 
     def predict(self, text):
         predict = predict_with_date_range(text)
-    # Простейший пример функции predict
-    # На практике здесь будет сложный алгоритм предсказания
+        # Простейший пример функции predict
+        # На практике здесь будет сложный алгоритм предсказания
         return predict
-
 
     def open_statistics(self):
         self.second_window = SecondWindow()
